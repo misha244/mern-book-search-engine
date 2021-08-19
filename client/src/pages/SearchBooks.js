@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Auth from "../utils/auth";
 import {
   Jumbotron,
   Container,
@@ -9,16 +8,24 @@ import {
   Card,
   CardColumns,
 } from "react-bootstrap";
-import { searchGoogleBooks } from "../utils/API";
+import { useMutation } from "@apollo/client";
+
+import Auth from "../utils/auth";
+import { saveBook, searchGoogleBooks } from "../utils/API";
 import { saveBookIds, getSavedBookIds } from "../utils/localStorage";
-import { SAVE_BOOK } from "../utils/mutations";
-import { useMutation } from "@apollo/react-hooks";
+import { SAVE_BOOK } from "../mutations";
 
 const SearchBooks = () => {
-  const [saveBook, { error }] = useMutation(SAVE_BOOK);
+  // state for holding returned google api data
   const [searchedBooks, setSearchedBooks] = useState([]);
+
+  // state for holding our search field data
   const [searchInput, setSearchInput] = useState("");
+
+  // state to hold saved bookId values
   const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
+
+  const [saveBook] = useMutation(SAVE_BOOK);
 
   useEffect(() => {
     return () => saveBookIds(savedBookIds);
@@ -35,7 +42,7 @@ const SearchBooks = () => {
       const response = await searchGoogleBooks(searchInput);
 
       if (!response.ok) {
-        throw new Error("Something went wrong!");
+        throw new Error("something went wrong!");
       }
 
       const { items } = await response.json();
@@ -58,20 +65,14 @@ const SearchBooks = () => {
   const handleSaveBook = async (bookId) => {
     const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
 
-    const token = Auth.loggedIn() ? Auth.getToken() : null;
-
-    if (!token) {
-      return false;
-    }
-
     try {
-      const { data } = await saveBook({
-        variables: { input: bookToSave },
+      await saveBook({
+        variables: {
+          saveBookInput: {
+            ...bookToSave,
+          },
+        },
       });
-
-      if (error) {
-        throw new Error("Something went wrong!");
-      }
 
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
     } catch (err) {
@@ -138,7 +139,7 @@ const SearchBooks = () => {
                       {savedBookIds?.some(
                         (savedBookId) => savedBookId === book.bookId
                       )
-                        ? "Book already saved!"
+                        ? "This book has already been saved!"
                         : "Save this Book!"}
                     </Button>
                   )}
