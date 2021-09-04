@@ -3,6 +3,11 @@ import decode from "jwt-decode";
 
 // create a new class to instantiate for a user
 class AuthService {
+  // get user data
+  getProfile() {
+    return decode(this.getToken());
+  }
+
   // check if user's logged in
   loggedIn() {
     // Checks if there is a saved token and it's still valid
