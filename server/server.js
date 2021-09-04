@@ -8,6 +8,9 @@ const resolvers = require("./resolvers/index");
 const { authMiddleware } = require("./utils/auth");
 const context = require("./context");
 
+//const routes = require("./routes");
+//const { start } = require("repl");
+
 const PORT = process.env.PORT || 3001;
 const app = express();
 
@@ -49,3 +52,5 @@ db.once("open", () => {
     console.error("Failed to run server");
   }
 });
+
+//app.use(routes);
