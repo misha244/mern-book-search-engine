@@ -1,20 +1,15 @@
 const { User } = require("../models");
 
+// we target find a specific user containing a specific book id and we remove that book id from the "savedBooks" array
 const removeBook = async (_, { bookId }, context) => {
-  if (context.user) {
-    const updatedUser = await User.findOneAndUpdate(
+  try {
+    return await User.findOneAndUpdate(
       { _id: context.user.id },
       { $pull: { savedBooks: { bookId } } },
       { new: true }
     );
-
-    if (!updatedUser) {
-      throw new Error("Couldn't find user with this id!");
-    }
-
-    return updatedUser;
-  } else {
-    throw new AuthenticationError("Not authorised");
+  } catch (error) {
+    console.error(error.message);
   }
 };
 

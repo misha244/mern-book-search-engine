@@ -1,27 +1,21 @@
-const { AuthenticationError } = require("apollo-server-express");
-
-const { User } = require("../models");
+const User = require("../models/User");
 
 const saveBook = async (_, { input }, context) => {
-  try {
-    if (context.user) {
-      const updatedUser = await User.findByIdAndUpdate(
-        { _id: context.user.id },
-        {
-          $push: {
-            savedBooks: input,
-          },
-        },
-        { new: true }
-      );
+  const { id } = context.user;
 
-      return updatedUser;
-    } else {
-      throw new AuthenticationError("Not authorised");
-    }
-  } catch (err) {
-    console.log(err);
-    throw new AuthenticationError("Something went wrong!");
+  // find the user and update the savedBooks field
+  try {
+    return await User.findOneAndUpdate(
+      { _id: id },
+      {
+        $push: {
+          savedBooks: input,
+        },
+      },
+      { new: true, runValidators: true }
+    ).populate("savedBooks");
+  } catch (error) {
+    console.error(error.message);
   }
 };
 
