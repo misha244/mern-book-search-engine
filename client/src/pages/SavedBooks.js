@@ -1,5 +1,5 @@
-import { useMutation, useQuery } from "@apollo/client";
 import React from "react";
+import { useQuery, useMutation } from "@apollo/client";
 import {
   Jumbotron,
   Container,
@@ -8,38 +8,42 @@ import {
   Button,
 } from "react-bootstrap";
 
-import { REMOVE_BOOK } from "../mutations";
-import { GET_ME } from "../queries";
-import { removeBookId } from "../utils/localStorage";
+import { GET_USER } from "../queries";
+import { DELETE_BOOK } from "../mutation";
 
 const SavedBooks = () => {
-  let userData;
+  // use query hook for the GET_USER query and get the data, error and loading state from graphQL
+  const { data, error, loading } = useQuery(GET_USER);
 
-  const [removeBook] = useMutation(REMOVE_BOOK);
+  // use mutation hook for the removeBook mutation and pass functions to handle success and error
+  const [removeBook] = useMutation(DELETE_BOOK);
 
+  // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
     try {
       await removeBook({
         variables: {
-          removeBookId: bookId,
+          removeBookBookId: bookId,
         },
       });
-
-      removeBookId(bookId);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const { data, loading, error } = useQuery(GET_ME);
+  // if it's loading render a loading div
 
   if (loading) {
     return <h2>LOADING...</h2>;
   }
 
-  if (data) {
-    userData = data.me;
+  // if there's an error render an error div
+  if (error) {
+    return <h2>ERROR...</h2>;
   }
+
+  // get the data from the graphql request
+  const userData = data.me;
 
   return (
     <>
